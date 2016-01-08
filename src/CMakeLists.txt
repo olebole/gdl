@@ -272,9 +272,16 @@ widget.cpp
 widget.hpp
 )
 
-add_subdirectory(antlr)
+include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
 
-include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/antlr ${CMAKE_BINARY_DIR})
+if(SYSTEM_ANTLR)
+	SET(LIBRARIES ${LIBRARIES} antlr-pic)
+else(SYSTEM_ANTLR)
+	add_subdirectory(antlr)
+	include_directories(${CMAKE_SOURCE_DIR}/src)
+	SET(LIBRARIES ${LIBRARIES} gdl_antlr)
+endif(SYSTEM_ANTLR)
+
 link_directories(${LINK_DIRECTORIES})
 
 if(PYTHON_MODULE) #GDL.so
@@ -288,8 +295,10 @@ else(PYTHON_MODULE) #GDL.so
 	add_executable(gdl ${SOURCES})
 endif(PYTHON_MODULE)
 
-add_dependencies(gdl antlr) # be sure that antlr is built before gdl
-target_link_libraries(gdl antlr) # link antlr against gdl
+if(NOT SYSTEM_ANTLR)# be sure that antlr is built before gdl
+	add_dependencies(gdl antlr)
+endif(NOT SYSTEM_ANTLR)
+
 if (MINGW)
 target_link_libraries(gdl ws2_32)
 endif (MINGW)
